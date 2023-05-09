@@ -1,0 +1,33 @@
+plugins {
+    id 'java'
+    id 'org.jetbrains.kotlin.jvm' version '1.6.10' // 确保添加 Kotlin
+    id 'org.jetbrains.kotlin.plugin.serialization' version '1.6.10'
+}
+
+group 'com.aimu'
+version '1.0-SNAPSHOT'
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'com.aimu.aimubot.bot.MainKt'
+    }
+    from {
+        configurations.compile.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+}
+
+repositories {
+    maven {
+        url 'https://repos.spark-packages.org'
+    }
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'net.mamoe:mirai-core:2.14.0'
+    implementation 'org.jsoup:jsoup:1.14.3'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib"
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}

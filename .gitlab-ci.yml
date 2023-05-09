@@ -1,0 +1,37 @@
+
+image: java-aimubot:v3
+
+stages:
+
+master_build:
+  stage: build
+  artifacts:
+    paths:
+      - /builds/InariAimu/aimubot/build/release.tar.gz
+      - /builds/InariAimu/aimubot/build/libs/aimubot-1.0-SNAPSHOT-all.jar
+    expire_in: 1 hour
+  tags:
+    - IA-ecs-docker
+  only:
+    - master
+  script:
+    - echo "gradle shadow jar build"
+    - chmod +x gradlew
+    - ./gradlew shadowJar
+    - cd /builds/InariAimu/aimubot/build
+    - tar -czf release.tar.gz libs/
+
+master_deploy:
+  stage: deploy
+  tags:
+    - IA-ecs-shell
+  only:
+    - master
+  script:
+    - echo "ci deploy"
+    - pwd
+    - mv build/libs/aimubot-1.0-SNAPSHOT-all.jar /root/aimubot-data/
+    - cp -r bot_shared_data/ /root/aimubot-data/
+    - mv device.json /root/aimubot-data/
+    - if [ $(docker ps -aq --filter name=aimubot) ]; then docker rm -f aimubot;fi
+    - docker run -d -v /root/aimubot-data:/aimubot-rt:rw --name aimubot aimubot:rt-v1
